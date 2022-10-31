@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/barcodes/JsBarcode.code128.min.js"></script>
+    <title>Barcode Generator with file</title>
+    <style>
+        .app-center{
+            display: flex;
+            justify-content: center;
+            height: 100%;
+            min-height: 100vh;
+            padding: 25px;
+            text-align: center;
+            background-color: rgb(224, 238, 251);
+        }
+        .input-cont div{
+            display: flex;
+        }
+        label{
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-size: 20px;
+            font-weight: 400;
+            margin-right: 12px;
+        }
+        input{
+            padding-left: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 18px;
+        }
+        .input-cont{
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin-bottom: 32px;
+        }
+        .palletId{
+            margin-left: 25px;
+        }
+        #result-cont{
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+        }
+        .barcode-style{
+            margin: 28px;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-center">
+        <div class="app-page">
+            <div class="input-cont">
+                <div>
+                    <label>Pallet Barcode:</label>
+                    <input type="'text" id="pallet input" placeholder="pallet ID"/>
+                </div>
+                <div class="palletId">
+                    <img id="barcode" />
+                </div>
+            </div>
+            
+            <div class="input-cont">
+                <label>Choose text file: </label>
+                <input type="file" id="file" />
+            </div>
+            <button type="button" id="submit" class="btn btn-primary" style="margin-right: 40px;">SUBMIT</button>
+            <button type="button" id="reset" class="btn btn-secondary">RESET</button>
+            <div id="result-cont">
+                 
+            </div>
+        </div>
+    </div>
+    
+    <script type="text/javascript">
+        let fileInputEl = document.getElementById('file')
+        let submitBtn = document.getElementById('submit')
+        let resetBtn = document.getElementById('reset')
+        const resultContainer = document.getElementById('result-cont')
+        const palletID = document.getElementById('pallet input')
+
+        //this function generate each carton bacode and display
+        const displayBarcodeEl = (barcode, i)=> {
+                        let imgEl = document.createElement('img')
+                        imgEl.classList.add('barcode-style')
+                        window.setTimeout(function(){
+                            JsBarcode(`#barcode${i}`, barcode, {
+                                    width: 2,
+                                    height: 60,
+                                    marginTop: 20,
+                                    marginBottom:20
+                                    })
+                            }, 0)
+                        imgEl.setAttribute('id', `barcode${i}`)
+                        resultContainer.appendChild(imgEl)
+                    }
+
+        const barcodesGen = (uploadedFile, fr)=> {
+            if (uploadedFile !== undefined){
+                if (uploadedFile.type.match(/text.*/)) {
+                fr.onload = async (e) => {
+                    let inputArr = e.target.result.split(',')
+                    inputArr = inputArr.map((each) => {
+                        let tempStr = each.replace(/[^a-zA-Z0-9 ]/g, "");
+                        return tempStr.trimStart();
+                    });
+                    // console.log(inputArr)
+                    
+                    for (let i=1; i<= inputArr.length; i++){
+                        displayBarcodeEl(inputArr[i-1], i)
+                    }
+                };
+                } else {
+                    alert("You are loaded wrong file type, please select .txt file");
+                }
+            fr.readAsText(uploadedFile);
+            }else {
+                alert("Please choose .txt file with list of carton Id's \n\n Example: 'BN10044215320275'")
+            }
+        }
+
+        const fileHandler = e => {
+            // console.log(e.target)
+            const uploadedFile = document.querySelector("input[type=file]").files[0];
+            const fr = new FileReader();
+            
+            if (palletID.value){
+                JsBarcode('#barcode', palletID.value)
+                barcodesGen(uploadedFile, fr)
+            }else {
+                alert("Please enter pallet barcode number!")
+            }
+        };
+        submitBtn.addEventListener('click', fileHandler)
+
+        resetBtn.addEventListener('click', (e)=>{
+            palletID.value = ''
+            document.getElementById('barcode').remove()
+            document.getElementById('file').value=""
+            resultContainer.remove()
+        })
+    
+    </script>
+   
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js" integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous"></script>
+    <noscript>Sorry, your browseer does not support JavaScript!</noscript>
+</body>
+</html>
